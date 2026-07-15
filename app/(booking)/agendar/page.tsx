@@ -15,7 +15,7 @@ export default function BookingPage() {
   const handleSubmit = async () => {
     try {
       await createGuestAppointment({
-        selectedServices,
+        selectedServices: selectedServices.map(s => s.id),
         selectedDate,
         selectedTimeSlot: selectedTime,
         clientData

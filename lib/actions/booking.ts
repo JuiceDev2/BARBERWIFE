@@ -2,19 +2,8 @@
 
 import { revalidatePath } from 'next/cache'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
-import { z } from 'zod'
-
-const bookingSchema = z.object({
-  selectedServices: z.array(z.string()),
-  selectedDate: z.string(),
-  selectedTimeSlot: z.string(),
-  clientData: z.object({
-    type: z.enum(['guest', 'registered']),
-    name: z.string().min(1),
-    phone: z.string().min(10),
-    email: z.string().email().optional(),
-  }),
-})
+import { bookingSchema } from '@/lib/schemas/booking'
+import type { z } from 'zod'
 
 export async function getAvailableTimeSlots(date: string, durationMinutes: number) {
   // TODO: Implement full logic with existing appointments
@@ -36,16 +25,25 @@ export async function getAvailableTimeSlots(date: string, durationMinutes: numbe
   return slots
 }
 
-export async function createGuestAppointment(input: any) {
+type GuestAppointmentInput = Omit<z.input<typeof bookingSchema>, 'clientData'> & {
+  clientData: Omit<z.input<typeof bookingSchema>['clientData'], 'type'>
+}
+
+export async function createGuestAppointment(input: GuestAppointmentInput) {
+  const parsed = bookingSchema.parse({
+    ...input,
+    clientData: { type: 'guest', ...input.clientData },
+  })
+
   const supabase = await createServerSupabaseClient()
 
   const { data: appointment, error } = await supabase
     .from('appointments')
     .insert({
-      guest_name: input.clientData.name,
-      guest_phone: input.clientData.phone,
-      scheduled_at: input.selectedDate,
-      start_time: input.selectedTimeSlot,
+      guest_name: parsed.clientData.name,
+      guest_phone: parsed.clientData.phone,
+      scheduled_at: parsed.selectedDate,
+      start_time: parsed.selectedTimeSlot,
       // Calculate end_time etc.
       status: 'pending',
       total_price: 100, // placeholder
@@ -56,7 +54,7 @@ export async function createGuestAppointment(input: any) {
   if (error) throw error
 
   // TODO: WhatsApp
-  console.log(`[TODO] Enviar confirmación WhatsApp a ${input.clientData.phone}`)
+  console.log(`[TODO] Enviar confirmación WhatsApp a ${parsed.clientData.phone}`)
 
   revalidatePath('/agendar')
   return appointment
