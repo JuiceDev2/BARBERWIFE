@@ -39,13 +39,65 @@ export default function BookingPage() {
         </div>
 
         {step === 1 && <ServiceSelector onSelect={setSelectedServices} selected={selectedServices} />}
-        {step === 2 && <div>Calendar Picker Placeholder</div>}
-        {step === 3 && <div>Time Slots</div>}
+
+        {step === 2 && (
+          <div>
+            <h2 className="text-3xl font-bold mb-8">Elige una Fecha</h2>
+            <input
+              type="date"
+              value={selectedDate}
+              min={new Date().toISOString().split('T')[0]}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              className="border-2 border-gray-200 rounded-xl px-4 py-3 w-full max-w-xs"
+            />
+          </div>
+        )}
+
+        {step === 3 && (
+          <div>
+            <h2 className="text-3xl font-bold mb-8">Elige un Horario</h2>
+            <div className="grid grid-cols-3 md:grid-cols-4 gap-3">
+              {['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00'].map(time => (
+                <button
+                  key={time}
+                  type="button"
+                  onClick={() => setSelectedTime(time)}
+                  className={`px-4 py-3 rounded-xl border-2 transition-all ${selectedTime === time ? 'border-purple-600 bg-purple-50 font-semibold' : 'border-gray-200 hover:border-gray-300'}`}
+                >
+                  {time}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {step === 4 && (
           <div>
-            <h2>Datos del Cliente</h2>
-            {/* Form */}
-            <button onClick={handleSubmit} className="mt-4 bg-green-600 text-white px-8 py-3 rounded">Confirmar Cita</button>
+            <h2 className="text-3xl font-bold mb-8">Datos del Cliente</h2>
+            <div className="space-y-4 max-w-md">
+              <input
+                type="text"
+                placeholder="Nombre completo"
+                value={clientData.name}
+                onChange={(e) => setClientData({ ...clientData, name: e.target.value })}
+                className="border-2 border-gray-200 rounded-xl px-4 py-3 w-full"
+              />
+              <input
+                type="tel"
+                placeholder="Teléfono"
+                value={clientData.phone}
+                onChange={(e) => setClientData({ ...clientData, phone: e.target.value })}
+                className="border-2 border-gray-200 rounded-xl px-4 py-3 w-full"
+              />
+              <input
+                type="email"
+                placeholder="Correo electrónico"
+                value={clientData.email}
+                onChange={(e) => setClientData({ ...clientData, email: e.target.value })}
+                className="border-2 border-gray-200 rounded-xl px-4 py-3 w-full"
+              />
+            </div>
+            <button onClick={handleSubmit} className="mt-6 bg-green-600 text-white px-8 py-3 rounded">Confirmar Cita</button>
           </div>
         )}
         {step === 5 && <div>¡Cita Confirmada! Gracias.</div>}
