@@ -60,11 +60,47 @@ export async function createGuestAppointment(input: GuestAppointmentInput) {
   return appointment
 }
 
-// Similar for other actions
-export async function createClientAppointment(input: any) {
-  // Similar logic with client_id
+export async function createClientAppointment(
+  input: Omit<z.input<typeof bookingSchema>, 'clientData'>
+) {
   const supabase = await createServerSupabaseClient()
-  // ...
+
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
+  if (authError || !user) {
+    throw new Error('Debes iniciar sesión para agendar como cliente registrado')
+  }
+
+  const { data: profile } = await supabase
+    .from('users')
+    .select('full_name, phone')
+    .eq('id', user.id)
+    .single()
+
+  const parsed = bookingSchema.parse({
+    ...input,
+    clientData: {
+      type: 'registered',
+      name: profile?.full_name ?? '',
+      phone: profile?.phone ?? '',
+      email: user.email,
+    },
+  })
+
+  const { data: appointment, error } = await supabase
+    .from('appointments')
+    .insert({
+      client_id: user.id,
+      scheduled_at: parsed.selectedDate,
+      start_time: parsed.selectedTimeSlot,
+      // Calculate end_time etc.
+      status: 'pending',
+      total_price: 100, // placeholder
+    })
+    .select()
+    .single()
+
+  if (error) throw error
+
   revalidatePath('/')
-  return { success: true }
+  return appointment
 }
