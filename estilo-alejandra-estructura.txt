@@ -1,0 +1,108 @@
+estilo-alejandra/
+├── app/
+│   ├── layout.tsx (root layout con PWA metadata)
+│   ├── page.tsx (landing)
+│   ├── globals.css
+│   ├── (auth)/
+│   │   ├── login/page.tsx
+│   │   ├── register/page.tsx
+│   │   └── reset-password/page.tsx
+│   ├── (booking)/
+│   │   ├── agendar/
+│   │   │   ├── page.tsx
+│   │   │   ├── servicios/page.tsx
+│   │   │   ├── horarios/page.tsx
+│   │   │   ├── datos/page.tsx
+│   │   │   └── confirmacion/page.tsx
+│   │   └── layout.tsx (context providers)
+│   ├── (admin)/
+│   │   ├── dashboard/page.tsx
+│   │   ├── servicios/
+│   │   │   ├── page.tsx
+│   │   │   └── [id]/edit/page.tsx
+│   │   ├── inventario-insumos/page.tsx
+│   │   ├── inventario-venta/page.tsx
+│   │   ├── usuarios/page.tsx
+│   │   ├── historial/page.tsx
+│   │   └── layout.tsx (protección admin)
+│   ├── (stylist)/
+│   │   ├── citas-hoy/page.tsx
+│   │   ├── cita/[id]/page.tsx
+│   │   └── layout.tsx (protección stylist)
+│   └── (client)/
+│       ├── perfil/page.tsx
+│       ├── mis-citas/page.tsx
+│       ├── historial-compras/page.tsx
+│       └── layout.tsx (protección client)
+├── components/
+│   ├── landing/
+│   │   ├── Hero.tsx
+│   │   ├── Servicios.tsx
+│   │   ├── Testimonios.tsx
+│   │   ├── Galeria.tsx
+│   │   ├── Ubicacion.tsx
+│   │   └── CTA.tsx
+│   ├── booking/
+│   │   ├── ServiceSelector.tsx
+│   │   ├── CalendarPicker.tsx
+│   │   ├── TimeSlotSelector.tsx
+│   │   ├── ClientDataForm.tsx
+│   │   └── BookingSummary.tsx
+│   ├── admin/
+│   │   ├── ServicesCRUD.tsx
+│   │   ├── InventoryForm.tsx
+│   │   ├── UserManagement.tsx
+│   │   └── Dashboard.tsx
+│   ├── stylist/
+│   │   ├── AppointmentsList.tsx
+│   │   ├── ServiceInProgress.tsx
+│   │   ├── Checkout.tsx
+│   │   └── TicketGenerator.tsx
+│   ├── ui/ (shadcn/ui)
+│   └── common/
+│       ├── Navigation.tsx
+│       ├── AuthGuard.tsx
+│       ├── LoadingSpinner.tsx
+│       └── Toast.tsx
+├── lib/
+│   ├── supabase/
+│   │   ├── client.ts
+│   │   ├── server.ts
+│   │   ├── admin.ts
+│   │   └── queries.ts
+│   ├── schemas/
+│   │   ├── booking.ts (Zod)
+│   │   ├── services.ts
+│   │   ├── auth.ts
+│   │   └── inventory.ts
+│   ├── actions/ (Server Actions)
+│   │   ├── booking.ts
+│   │   ├── auth.ts
+│   │   ├── services.ts
+│   │   ├── appointments.ts
+│   │   └── sales.ts
+│   ├── utils/
+│   │   ├── dates.ts
+│   │   ├── validators.ts
+│   │   └── formatters.ts
+│   └── hooks/
+│       ├── useAuth.ts
+│       ├── useBooking.ts
+│       └── useAppointments.ts
+├── types/
+│   └── index.ts
+├── public/
+│   ├── manifest.json
+│   ├── service-worker.js
+│   ├── icons/
+│   └── images/
+├── supabase/
+│   ├── migrations/
+│   │   ├── 001_initial_schema.sql
+│   │   └── 002_rls_policies.sql
+│   └── seed.sql
+├── .env.local.example
+├── next.config.ts
+├── tsconfig.json
+├── tailwind.config.ts
+└── package.json
