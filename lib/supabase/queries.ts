@@ -1,5 +1,5 @@
 import { createServerSupabaseClient } from './server'
-import { Service, Appointment, User, Sale } from '@/types'
+import { Service } from '@/types'
 
 export async function getServices(includeInactive = false) {
   const supabase = await createServerSupabaseClient()

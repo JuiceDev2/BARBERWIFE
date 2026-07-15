@@ -1,5 +1,3 @@
-import { Toaster } from 'sonner'
-
 export default function BookingLayout({
   children,
 }: {

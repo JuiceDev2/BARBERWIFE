@@ -3,7 +3,6 @@
 import { revalidatePath } from 'next/cache'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { z } from 'zod'
-import { BookingState } from '@/types'
 
 const bookingSchema = z.object({
   selectedServices: z.array(z.string()),
