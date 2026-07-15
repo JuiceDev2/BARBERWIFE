@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { getServices } from '@/lib/supabase/queries'
+import { createClient } from '@/lib/supabase/client'
 import { Service } from '@/types'
 
 export default function ServiceSelector({ 
@@ -14,7 +14,15 @@ export default function ServiceSelector({
   const [services, setServices] = useState<Service[]>([])
 
   useEffect(() => {
-    getServices().then(setServices)
+    const supabase = createClient()
+    supabase
+      .from('services')
+      .select('*')
+      .eq('is_active', true)
+      .order('name')
+      .then(({ data, error }) => {
+        if (!error && data) setServices(data as Service[])
+      })
   }, [])
 
   const toggleService = (service: Service) => {
