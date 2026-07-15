@@ -11,6 +11,12 @@ type ActionResult = {
   fieldErrors?: Record<string, string>
 }
 
+const ROLE_HOME: Record<string, string> = {
+  admin: '/admin',
+  stylist: '/stylist',
+  client: '/client',
+}
+
 export async function signInAction(
   input: z.input<typeof loginSchema>,
   redirectTo?: string
@@ -27,7 +33,7 @@ export async function signInAction(
 
   const supabase = await createServerSupabaseClient()
 
-  const { error } = await supabase.auth.signInWithPassword({
+  const { data: signInData, error } = await supabase.auth.signInWithPassword({
     email: parsed.data.email,
     password: parsed.data.password,
   })
@@ -36,11 +42,26 @@ export async function signInAction(
     if (error.message.includes('Invalid login credentials')) {
       return { error: 'Email o contraseña incorrectos' }
     }
+    if (error.message.includes('Email not confirmed')) {
+      return { error: 'Debes confirmar tu email antes de iniciar sesión' }
+    }
     return { error: 'No se pudo iniciar sesión. Intenta nuevamente.' }
   }
 
+  let destination = redirectTo && redirectTo.startsWith('/') ? redirectTo : undefined
+
+  if (!destination && signInData.user) {
+    const { data: profile } = await supabase
+      .from('users')
+      .select('role')
+      .eq('id', signInData.user.id)
+      .single()
+
+    destination = (profile?.role && ROLE_HOME[profile.role]) || '/'
+  }
+
   revalidatePath('/', 'layout')
-  redirect(redirectTo && redirectTo.startsWith('/') ? redirectTo : '/')
+  redirect(destination || '/')
 }
 
 export async function signUpAction(
@@ -79,7 +100,7 @@ export async function signUpAction(
   // Si la confirmación de email está desactivada, Supabase ya crea la sesión.
   if (data.session) {
     revalidatePath('/', 'layout')
-    redirect('/')
+    redirect('/client')
   }
 
   // Si requiere confirmación por email, no hay sesión todavía.
