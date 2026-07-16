@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/browser'
 import toast from 'react-hot-toast'
-import { getDashboardByRol } from '@/lib/auth'
+import { getDashboardByRol } from '@/lib/roles'
 
 export default function LoginForm() {
   const router = useRouter()

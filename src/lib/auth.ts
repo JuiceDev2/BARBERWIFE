@@ -1,6 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import type { Perfil, Rol } from '@/types'
+import { getDashboardByRol } from '@/lib/roles'
+
+export { getDashboardByRol }
 
 export async function getUser() {
   const supabase = await createClient()
@@ -39,17 +42,4 @@ export async function requireRol(...roles: Rol[]) {
   }
 
   return perfil
-}
-
-export function getDashboardByRol(rol: Rol): string {
-  switch (rol) {
-    case 'propietaria':
-      return '/propietaria'
-    case 'admin':
-      return '/admin'
-    case 'estilista':
-      return '/estilista'
-    default:
-      return '/login'
-  }
 }
