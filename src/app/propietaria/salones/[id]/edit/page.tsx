@@ -2,7 +2,9 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import SalonEditForm from './SalonEditForm'
 
-export default async function EditSalonPage({ params }: { params: { id: string } }) {
+export default async function EditSalonPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
@@ -21,7 +23,7 @@ export default async function EditSalonPage({ params }: { params: { id: string }
   const { data: salon } = await supabase
     .from('salones')
     .select('*')
-    .eq('id', params.id)
+    .eq('id', id)
     .single()
 
   if (!salon) {
