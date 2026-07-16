@@ -1,11 +1,16 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 
-export async function PATCH(
-  request: Request,
-  context: { params: { id: string } }
-) {
+export async function PATCH(request: Request) {
   try {
+    const { id } = Object.fromEntries(new URL(request.url).searchParams) || 
+                   // Alternativa: extraer desde pathname si es necesario
+                   { id: request.url.split('/').pop() }
+
+    if (!id) {
+      return NextResponse.json({ error: 'ID de salón requerido' }, { status: 400 })
+    }
+
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
@@ -34,17 +39,17 @@ export async function PATCH(
         activo: body.activo,
         updated_at: new Date().toISOString(),
       })
-      .eq('id', context.params.id)
+      .eq('id', id)
 
     if (error) {
       console.error('Error Supabase:', error)
       return NextResponse.json({ error: error.message }, { status: 400 })
     }
 
-    return NextResponse.json({ ok: true, message: 'Sucursal actualizada' })
+    return NextResponse.json({ ok: true, message: 'Sucursal actualizada correctamente' })
 
   } catch (err: any) {
-    console.error('Error en PATCH /api/salones:', err)
-    return NextResponse.json({ error: err.message || 'Error interno' }, { status: 500 })
+    console.error('Error en PATCH /api/salones/[id]:', err)
+    return NextResponse.json({ error: err.message || 'Error interno del servidor' }, { status: 500 })
   }
 }
