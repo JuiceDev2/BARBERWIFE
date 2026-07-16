@@ -19,11 +19,12 @@ export async function middleware(request: NextRequest) {
           cookiesToSet: {
             name: string
             value: string
-            options?: Record<string, unknown>
+            options?: any
           }[]
         ) {
           cookiesToSet.forEach(({ name, value, options }) => {
             request.cookies.set(name, value)
+
             response.cookies.set(name, value, options)
           })
         },
@@ -31,6 +32,7 @@ export async function middleware(request: NextRequest) {
     }
   )
 
+  // IMPORTANTE: refresca sesión
   await supabase.auth.getUser()
 
   return response
