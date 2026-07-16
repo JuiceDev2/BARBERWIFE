@@ -3,9 +3,8 @@ import { NextResponse } from 'next/server'
 
 export async function PATCH(request: Request) {
   try {
-    // Extraer el ID desde la URL
     const url = new URL(request.url)
-    const id = url.pathname.split('/').pop()
+    const id = url.pathname.split('/').filter(Boolean).pop()
 
     if (!id) {
       return NextResponse.json({ error: 'ID de salón requerido' }, { status: 400 })
@@ -42,14 +41,14 @@ export async function PATCH(request: Request) {
       .eq('id', id)
 
     if (error) {
-      console.error('Error Supabase:', error)
+      console.error(error)
       return NextResponse.json({ error: error.message }, { status: 400 })
     }
 
-    return NextResponse.json({ ok: true, message: 'Sucursal actualizada correctamente' })
+    return NextResponse.json({ ok: true })
 
   } catch (err: any) {
-    console.error('Error en PATCH /api/salones/[id]:', err)
-    return NextResponse.json({ error: err.message || 'Error interno del servidor' }, { status: 500 })
+    console.error(err)
+    return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
 }
