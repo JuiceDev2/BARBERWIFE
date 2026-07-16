@@ -1,56 +1,42 @@
-import { redirect } from 'next/navigation'
-import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { requireRole } from '@/lib/auth/require-role'
+import { getTodayAppointments } from '@/lib/supabase/queries'
 
-export default async function StylistDashboardPage() {
-  const supabase = await createServerSupabaseClient()
+const statusLabels: Record<string, string> = {
+  pending: 'Pendiente',
+  confirmed: 'Confirmada',
+  in_progress: 'En curso',
+  completed: 'Completada',
+  cancelled: 'Cancelada',
+}
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
-    redirect('/login?next=/stylist')
-  }
-
-  const { data: profile } = await supabase
-    .from('users')
-    .select('*')
-    .eq('id', user!.id)
-    .single()
-
-  if (profile && profile.role !== 'stylist' && profile.role !== 'admin') {
-    redirect('/client')
-  }
-
-  const { data: appointments } = await supabase
-    .from('appointments')
-    .select('*')
-    .eq('stylist_id', user!.id)
-    .order('scheduled_at', { ascending: true })
-    .limit(10)
+export default async function StylistPage() {
+  const profile = await requireRole(['stylist'])
+  const appointments = await getTodayAppointments()
 
   return (
-    <div className="container mx-auto px-6 pt-24 pb-12">
-      <h1 className="text-3xl font-bold text-gray-900 mb-1">
-        Hola, {profile?.full_name || 'estilista'}
-      </h1>
-      <p className="text-gray-500 mb-8">Este es tu panel de estilista.</p>
+    <div className="container mx-auto px-6 py-12">
+      <h1 className="text-3xl font-bold mb-2">Mis Citas de Hoy</h1>
+      <p className="text-gray-600 mb-10">Hola, {profile.full_name}</p>
 
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-        <h2 className="font-semibold text-lg mb-4">Citas asignadas</h2>
-        {appointments && appointments.length > 0 ? (
-          <ul className="divide-y divide-gray-100">
-            {appointments.map((a) => (
-              <li key={a.id} className="py-3 flex justify-between text-sm">
-                <span>{new Date(a.scheduled_at).toLocaleString('es-MX')}</span>
-                <span className="capitalize text-gray-500">{a.status}</span>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-sm text-gray-500">No tienes citas asignadas todavía.</p>
-        )}
-      </div>
+      {appointments.length === 0 ? (
+        <p className="text-gray-500">No tienes citas programadas por ahora.</p>
+      ) : (
+        <div className="space-y-4">
+          {appointments.map((appt: any) => (
+            <div key={appt.id} className="bg-white rounded-2xl border p-6 flex justify-between items-center">
+              <div>
+                <div className="font-semibold text-lg">
+                  {appt.client?.full_name || appt.guest_name || 'Cliente'}
+                </div>
+                <div className="text-gray-500 text-sm">{appt.start_time}</div>
+              </div>
+              <span className="text-sm px-3 py-1 rounded-full bg-purple-50 text-purple-700">
+                {statusLabels[appt.status] || appt.status}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

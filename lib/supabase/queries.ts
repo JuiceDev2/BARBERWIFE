@@ -22,7 +22,7 @@ export async function getTodayAppointments(statuses: string[] = ['confirmed', 'i
     .from('appointments')
     .select(`
       *,
-      client:user:client_id(*),
+      client:users!client_id(*),
       services:appointment_services(
         *,
         service:service_id(*)

@@ -1,56 +1,63 @@
-import { redirect } from 'next/navigation'
+import { requireRole } from '@/lib/auth/require-role'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { getClientPurchaseHistory } from '@/lib/supabase/queries'
 
-export default async function ClientDashboardPage() {
+export default async function ClientPage() {
+  const profile = await requireRole(['client'])
   const supabase = await createServerSupabaseClient()
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
-    redirect('/login?next=/client')
-  }
-
-  const { data: profile } = await supabase
-    .from('users')
-    .select('*')
-    .eq('id', user!.id)
-    .single()
-
-  if (profile && profile.role !== 'client') {
-    redirect(profile.role === 'admin' ? '/admin' : '/stylist')
-  }
-
-  const { data: appointments } = await supabase
+  const { data: upcomingAppointments } = await supabase
     .from('appointments')
     .select('*')
-    .eq('client_id', user!.id)
-    .order('scheduled_at', { ascending: false })
-    .limit(10)
+    .eq('client_id', profile.id)
+    .in('status', ['pending', 'confirmed'])
+    .order('scheduled_at')
+
+  const purchaseHistory = await getClientPurchaseHistory(profile.id)
 
   return (
-    <div className="container mx-auto px-6 pt-24 pb-12">
-      <h1 className="text-3xl font-bold text-gray-900 mb-1">
-        Hola, {profile?.full_name || 'cliente'}
-      </h1>
-      <p className="text-gray-500 mb-8">Este es tu panel de cliente.</p>
+    <div className="container mx-auto px-6 py-12">
+      <h1 className="text-3xl font-bold mb-2">Mi Cuenta</h1>
+      <p className="text-gray-600 mb-10">Hola, {profile.full_name}</p>
 
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-        <h2 className="font-semibold text-lg mb-4">Tus próximas citas</h2>
-        {appointments && appointments.length > 0 ? (
-          <ul className="divide-y divide-gray-100">
-            {appointments.map((a) => (
-              <li key={a.id} className="py-3 flex justify-between text-sm">
-                <span>{new Date(a.scheduled_at).toLocaleString('es-MX')}</span>
-                <span className="capitalize text-gray-500">{a.status}</span>
-              </li>
-            ))}
-          </ul>
+      <section className="mb-12">
+        <h2 className="text-xl font-semibold mb-4">Próximas Citas</h2>
+        {!upcomingAppointments || upcomingAppointments.length === 0 ? (
+          <p className="text-gray-500">No tienes citas próximas.</p>
         ) : (
-          <p className="text-sm text-gray-500">Todavía no tienes citas agendadas.</p>
+          <div className="space-y-3">
+            {upcomingAppointments.map((appt) => (
+              <div key={appt.id} className="bg-white rounded-2xl border p-6 flex justify-between items-center">
+                <div>
+                  <div className="font-semibold">{appt.scheduled_at}</div>
+                  <div className="text-gray-500 text-sm">{appt.start_time}</div>
+                </div>
+                <span className="text-sm px-3 py-1 rounded-full bg-purple-50 text-purple-700">
+                  {appt.status}
+                </span>
+              </div>
+            ))}
+          </div>
         )}
-      </div>
+      </section>
+
+      <section>
+        <h2 className="text-xl font-semibold mb-4">Historial de Compras</h2>
+        {!purchaseHistory || purchaseHistory.length === 0 ? (
+          <p className="text-gray-500">Aún no tienes compras registradas.</p>
+        ) : (
+          <div className="space-y-3">
+            {purchaseHistory.map((sale: any) => (
+              <div key={sale.id} className="bg-white rounded-2xl border p-6 flex justify-between items-center">
+                <div className="text-gray-500 text-sm">
+                  {new Date(sale.created_at).toLocaleDateString('es-MX')}
+                </div>
+                <div className="font-semibold">${sale.total?.toFixed(2)}</div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   )
 }
