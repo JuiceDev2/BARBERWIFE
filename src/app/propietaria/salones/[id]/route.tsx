@@ -3,9 +3,9 @@ import { NextResponse } from 'next/server'
 
 export async function PATCH(request: Request) {
   try {
-    const { id } = Object.fromEntries(new URL(request.url).searchParams) || 
-                   // Alternativa: extraer desde pathname si es necesario
-                   { id: request.url.split('/').pop() }
+    // Extraer el ID desde la URL
+    const url = new URL(request.url)
+    const id = url.pathname.split('/').pop()
 
     if (!id) {
       return NextResponse.json({ error: 'ID de salón requerido' }, { status: 400 })
